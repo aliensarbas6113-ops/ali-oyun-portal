@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ali'nin Oyun Portalı</title>
+<style>
+body { margin:0; font-family: Arial, sans-serif; background: linear-gradient(135deg,#4e73df,#1cc88a); color:white; text-align:center; scroll-behavior:smooth; }
+header { padding:60px 20px; }
+h1 { font-size:50px; margin-bottom:10px; }
+p { font-size:20px; }
+.btn { display:inline-block; margin-top:20px; padding:12px 25px; background-color:white; color:#4e73df; text-decoration:none; border-radius:30px; font-weight:bold; transition:0.3s; cursor:pointer; }
+.btn:hover { background-color:#f8f9fc; transform:scale(1.1); }
+section { padding:50px 20px; min-height:400px; display:none; justify-content:center; align-items:center; flex-direction:column; gap:15px; }
+footer { padding:20px; background-color:rgba(0,0,0,0.3); font-size:14px; }
+.ana-sayfa { display:flex; flex-direction:column; align-items:center; gap:20px; min-height:400px; justify-content:center; }
+.oyun-kutu { background: linear-gradient(135deg, #ff6a00, #ee0979); padding: 30px; border-radius: 20px; width: 300px; color: white; cursor: pointer; transition: 0.3s; }
+.oyun-kutu:hover { transform: scale(1.05); box-shadow:0 0 20px rgba(255,255,255,0.5); }
+input,button { font-size:16px; }
+input { padding:10px; border-radius:8px; border:none; }
+button { padding:12px 25px; border-radius:30px; border:none; background-color:white; color:#4e73df; font-weight:bold; cursor:pointer; transition:0.3s; }
+button:hover { transform:scale(1.1); background-color:#f8f9fc; }
+#soru,#quizSonuc,#puan,#puanQuiz { font-size:18px; margin-top:10px; font-weight:bold; }
+#clickerAlan { position:relative; width:300px; height:300px; border:2px dashed white; margin:20px auto; border-radius:15px; background-color: rgba(255,255,255,0.1); }
+#hareketliButon { position:absolute; transform:translate(-50%,-50%); }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>👋 Ali'nin Oyun Portalı</h1>
+    <p>Eğlenceli oyunları keşfet!</p>
+</header>
+
+<section class="ana-sayfa" id="anasayfa">
+    <h2>Oyun Seç</h2>
+    <div class="oyun-kutu" onclick="oyunuAc('tahmin')">🎲 Sayı Tahmin</div>
+    <div class="oyun-kutu" onclick="oyunuAc('tkm')">✂️ Taş-Kağıt-Makas</div>
+    <div class="oyun-kutu" onclick="oyunuAc('clicker')">🖱️ Tıklama Oyunu</div>
+    <div class="oyun-kutu" onclick="oyunuAc('quiz')">❓ Mini Quiz</div>
+</section>
+
+<!-- Tahmin Oyunu -->
+
+<section id="tahmin">
+    <h2>Sayı Tahmin Oyunu</h2>
+    <p>1 ile 10 arasında bir sayı tahmin et!</p>
+    <input type="number" id="tahminInput" min="1" max="10" placeholder="Tahminini gir">
+    <button onclick="kontrolEt()">Tahmin Et</button>
+    <p id="sonuc"></p>
+    <button class="btn" onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<!-- Taş-Kağıt-Makas -->
+
+<section id="tkm">
+    <h2>Taş-Kağıt-Makas</h2>
+    <p id="bilgisayarSecim">💻 Bilgisayar: ?</p>
+    <button onclick="tkmOyna('taş')">🪨 Taş</button>
+    <button onclick="tkmOyna('kağıt')">📄 Kağıt</button>
+    <button onclick="tkmOyna('makas')">✂️ Makas</button>
+    <p id="tkmSonuc"></p>
+    <button class="btn" onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<!-- Clicker Oyunu -->
+
+<section id="clicker">
+    <h2>Tıklama Oyunu</h2>
+    <p>Butona tıkla ve puanını artır! 🎯</p>
+    <div id="clickerAlan" onclick="puanSifirla(event)">
+        <button id="hareketliButon" onclick="puanArttir(event)">Tıkla!</button>
+    </div>
+    <p>Puanın: <span id="puan">0</span></p>
+    <p>En yüksek puan: <span id="puanMax">0</span></p>
+    <button class="btn" onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<!-- Quiz -->
+
+<section id="quiz">
+    <h2>❓ Mini Quiz</h2>
+    <div id="yasSoru">
+        <p>Kaç yaşındasın?</p>
+        <input type="number" id="yasInput" min="8" max="99" placeholder="Yaşını gir">
+        <button onclick="baslaQuiz()">Başla</button>
+    </div>
+    <p id="soru"></p>
+    <div id="cevaplar"></div>
+    <p>Puan: <span id="puanQuiz">0</span></p>
+    <p id="quizSonuc"></p>
+    <button class="btn" onclick="oyunaDon()">🏠 Ana Sayfaya Dön</button>
+</section>
+
+<footer>
+    © 2026 Ali | Tüm Hakları Saklıdır
+</footer>
+
+<canvas id="confetti"></canvas>
+
+<script>
+// ---------------- GENEL ----------------
+function oyunuAc(id){ document.getElementById('anasayfa').style.display='none'; document.querySelectorAll('section[id]').forEach(sec=>{if(sec.id!=='anasayfa') sec.style.display='none';}); document.getElementById(id).style.display='flex'; }
+function oyunaDon(){ document.getElementById('anasayfa').style.display='flex'; document.querySelectorAll('section[id]').forEach(sec=>{if(sec.id!=='anasayfa') sec.style.display='none';}); resetOyunlar(); }
+
+// ---------------- TAHMİN ----------------
+let rastgeleSayi=Math.floor(Math.random()*10)+1;
+function kontrolEt(){ const t=parseInt(document.getElementById('tahminInput').value); const s=document.getElementById('sonuc'); if(t===rastgeleSayi){ s.textContent="🎉 Doğru!"; rastgeleSayi=Math.floor(Math.random()*10)+1; konfeti(); } else if(t<rastgeleSayi){ s.textContent="⬆️ Daha büyük"; } else if(t>rastgeleSayi){ s.textContent="⬇️ Daha küçük"; } else{s.textContent="❌ 1-10 arası gir";}}
+
+// ---------------- TKM ----------------
+let tkmAktif=true;
+function tkmOyna(secim){ if(!tkmAktif) return; tkmAktif=false; setTimeout(()=>{tkmAktif=true;},3000); const ops=['taş','kağıt','makas']; const pc=ops[Math.floor(Math.random()*3)]; document.getElementById('bilgisayarSecim').textContent=`💻 Bilgisayar: ${pc.toUpperCase()}`; let sonuc=''; if(secim===pc) sonuc="🤝 Berabere!"; else if((secim==='taş'&&pc==='makas')||(secim==='kağıt'&&pc==='taş')||(secim==='makas'&&pc==='kağıt')){ sonuc="🎉 Kazandın!"; konfeti(); } else sonuc="😢 Kaybettin!"; document.getElementById('tkmSonuc').textContent=sonuc; }
+
+// ---------------- CLICKER ----------------
+let puan=0; let puanMax=0;
+function puanArttir(event){ event.stopPropagation(); puan++; if(puan>puanMax){ puanMax=puan; document.getElementById('puanMax').textContent=puanMax; konfeti(); } document.getElementById('puan').textContent=puan; const alan=document.getElementById('clickerAlan'); const b=document.getElementById('hareketliButon'); const maxX=alan.clientWidth-60; const maxY=alan.clientHeight-60; b.style.left=Math.random()*maxX+'px'; b.style.top=Math.random()*maxY+'px'; }
+function puanSifirla(event){ if(event.target.id!=='hareketliButon'){ puan=0; document.getElementById('puan').textContent=puan; }}
+
+// ---------------- QUIZ ----------------
+let yasDegeri=0; let quizSorular=[]; let quizIndex=0; let puanQuiz=0;
+const bankasi={kolay:[{q:"2+5=?",c:["6","7","8"],a:1},{q:"Güneş doğudan mı doğar?",c:["Evet","Hayır"],a:0},{q:"Dünya yuvarlak mı?",c:["Evet","Hayır"],a:0},{q:"10-3=?",c:["7","9","6"],a:0},{q:"Renk gökkuşağında bir renktir?",c:["Mor","Kahverengi","Siyah"],a:0},{q:"Hafta kaç gündür?",c:["5","7","8"],a:1}], orta:[{q:"Türkiye'nin başkenti?",c:["İstanbul","Ankara","İzmir"],a:1},{q:"5×6=?",c:["30","26","40"],a:0},{q:"Jüpiter hangi tür bir gök cisimidir?",c:["Gezegen","Yıldız","Ay"],a:0},{q:"Türkiye'nin para birimi?",c:["Euro","TL","Dolar"],a:1},{q:"Kedi kaç ayaklıdır?",c:["2","4","6"],a:1},{q:"Su kaç derecede donar?",c:["0°C","50°C","100°C"],a:0}], zor:[{q:"Işık kaçta kırılır?",c:["Farklı ortamda","Hep aynı","Sadece suda"],a:0},{q:"Atomun çekirdeğinde ne var?",c:["Proton & Nötron","Elektron","İyon"],a:0} ]};
+function baslaQuiz(){ yasDegeri=parseInt(document.getElementById('yasInput').value); document.getElementById('yasSoru').style.display='none'; puanQuiz=0; document.getElementById('puanQuiz').textContent=puanQuiz; if(yasDegeri<11) quizSorular=shuffle([...bankasi.orta]); else if(yasDegeri<=14) quizSorular=shuffle([...bankasi.orta]); else quizSorular=shuffle([...bankasi.zor]); quizIndex=0; quizGoster(); }
+function quizGoster(){ if(quizIndex>=quizSorular.length){ quizIndex=0; quizSorular=shuffle(quizSorular);} const s=quizSorular[quizIndex]; document.getElementById('soru').textContent=s.q; const cvp=document.getElementById('cevaplar'); cvp.innerHTML=''; s.c.forEach((x,i)=>{ const btn=document.createElement('button'); btn.textContent=x; btn.onclick=()=>{ if(i===s.a){ document.getElementById('quizSonuc').textContent='🎉 Doğru!'; puanQuiz+=10; document.getElementById('puanQuiz').textContent=puanQuiz; konfeti(); quizIndex++; quizGoster(); } else { document.getElementById('quizSonuc').textContent='❌ Yanlış!'; quizIndex++; quizGoster(); } }; cvp.appendChild(btn); }); }
+
+// ---------------- KONFETİ ----------------
+function konfeti(){ const canvas=document.getElementById('confetti'); const ctx=canvas.getContext('2d'); canvas.width=window.innerWidth; canvas.height=window.innerHeight; const parca=[]; const renkler=['#ff0','#0ff','#f0f','#0f0','#f00','#00f','#fff']; for(let i=0;i<150;i++){ parca.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-100,r:Math.random()*6+4,d:Math.random()*20+10,color:renkler[Math.floor(Math.random()*renkler.length)],tilt:Math.random()*10-10}); } let angle=0; function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); parca.forEach(p=>{ctx.beginPath(); ctx.fillStyle=p.color; ctx.moveTo(p.x+p.tilt,p.y); ctx.lineTo(p.x+p.tilt+p.r/2,p.y+p.r); ctx.lineTo(p.x+p.tilt-p.r/2,p.y+p.r); ctx.closePath(); ctx.fill(); p.y+=Math.cos(angle+p.d)*2+1; p.x+=Math.sin(angle)*2; if(p.y>canvas.height) p.y=-10;}); angle+=0.01; } const interval=setInterval(draw,20); setTimeout(()=>{ clearInterval(interval); ctx.clearRect(0,0,canvas.width,canvas.height); },4000); }
+
+// ---------------- YARDIMCI ----------------
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a;}
+function resetOyunlar(){ puan=0; document.getElementById('puan').textContent=puan; }
+</script>
+
+</body>
+</html>
